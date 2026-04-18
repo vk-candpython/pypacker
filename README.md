@@ -14,6 +14,11 @@
 
 ---
 
+> [!WARNING]
+> This tool is for educational purposes and authorized security auditing only. The author is not responsible for any misuse.
+
+---
+
 ## 📖 Table of Contents | Оглавление
 
 - [English](#english)
