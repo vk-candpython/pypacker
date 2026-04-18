@@ -6,7 +6,6 @@
 [![Platform](https://img.shields.io/badge/platform-Any-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![Language](https://img.shields.io/badge/language-Python%203-3776AB?logo=python)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Release](https://img.shields.io/badge/release-v1.0.0-brightgreen)](https://github.com/vk-candpython/pypacker/releases/tag/v1.0.0)
 
 *Advanced multi‑layer Python code protection with polymorphic runtime*
 
