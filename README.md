@@ -25,7 +25,7 @@
   - [✨ Features](#-features)
   - [🔒 Protection Layers](#-protection-layers)
   - [🚀 Quick Start](#-quick-start)
-  - [⚙️ How It Works](#️-how-it-works)
+  - [⚙️ Deep Technical Analysis](#️-deep-technical-analysis)
   - [📁 Output](#-output)
   - [⚠️ Important Notes](#️-important-notes)
   - [🔧 Troubleshooting](#-troubleshooting)
@@ -35,7 +35,7 @@
   - [✨ Возможности](#-возможности)
   - [🔒 Уровни защиты](#-уровни-защиты)
   - [🚀 Быстрый старт](#-быстрый-старт)
-  - [⚙️ Как это работает](#️-как-это-работает)
+  - [⚙️ Глубокий технический анализ](#️-глубокий-технический-анализ)
   - [📁 Результат](#-результат)
   - [⚠️ Важные замечания](#️-важные-замечания)
   - [🔧 Устранение неполадок](#-устранение-неполадок)
@@ -46,21 +46,21 @@
 
 ## 📋 Overview
 
-**PyPacker** is an advanced Python code protection tool that transforms ordinary scripts into **heavily obfuscated, multi‑layer encrypted, self‑decrypting executables**.
+**PyPacker** is an advanced Python code protection tool that transforms ordinary scripts into heavily obfuscated, multi‑layer encrypted, self‑decrypting executables.
 
-Unlike simple obfuscators, PyPacker implements a **9‑layer protection pipeline**:
+### What makes it unique?
 
-1. **XOR Encryption** (16‑bit rolling key)
-2. **GZIP Compression** (level 9)
-3. **Pickle Serialization** (code object marshaling)
-4. **LZMA Compression** (custom 16MB dictionary)
-5. **ZLIB Compression** (raw deflate, level 9)
-6. **Base85 Encoding** (payload encoding)
-7. **UUEncoding** (codecs layer)
-8. **Marshal Serialization** (bytecode conversion)
-9. **Polymorphic Wrapper** (runtime self‑decryption)
-
-Each layer adds entropy and makes reverse engineering **exponentially more difficult**.
+| Component | Implementation |
+|-----------|----------------|
+| **9‑Layer Encryption Pipeline** | XOR → GZIP → Pickle → LZMA → ZLIB → Base85 → UU → Marshal → Polymorphic |
+| **Rolling XOR Cipher** | 16‑bit key with feedback — each encrypted byte depends on all previous |
+| **Triple Compression** | GZIP + LZMA (16MB dictionary) + ZLIB (raw deflate) for maximum entropy |
+| **Polymorphic Wrapper** | 100% unique per build — random identifiers from 129-char alphabet |
+| **Constant Obfuscation** | `True`/`False`/`None`/`...` replaced with 60+ complex expressions |
+| **Marshal Bytecode** | Converts Python source to marshaled code objects |
+| **Dead Code Injection** | Random expressions that never execute but confuse static analyzers |
+| **Anti‑Debugging** | `sys.gettrace()` checks injected |
+| **No Temp Files** | All decryption happens in memory |
 
 ## ✨ Features
 
@@ -68,81 +68,63 @@ Each layer adds entropy and makes reverse engineering **exponentially more diffi
 |---------|-------------|
 | 🔐 **9‑Layer Encryption** | XOR → GZIP → Pickle → LZMA → ZLIB → Base85 → UU → Marshal → Polymorphic |
 | 🎲 **Polymorphic Code** | Different obfuscation patterns on every build |
-| 🔄 **Rolling XOR Key** | 16‑bit key with feedback mechanism |
+| 🔄 **Rolling XOR Key** | 16‑bit key with feedback mechanism — each byte depends on previous state |
 | 📦 **Triple Compression** | GZIP + LZMA + ZLIB for maximum entropy |
-| 🧠 **Marshal Bytecode** | Converts Python source to marshaled code objects |
-| 🎭 **Constant Obfuscation** | `True`/`False`/`None`/`...` replaced with complex expressions |
-| 🔍 **Anti‑Debugging** | `sys.gettrace()` checks injected |
-| 🌍 **Full Unicode Support** | 129‑character alphabet (Latin + Cyrillic + Ukrainian) |
-| 🛡️ **No Temp Files** | All decryption happens in memory |
-| ⚡ **Self‑Decrypting** | Packed script decrypts itself at runtime |
+| 🧠 **Marshal Bytecode** | Converts Python source to marshaled code objects via `marshal.dumps()` |
+| 🎭 **Constant Obfuscation** | `True`/`False`/`None`/`...` replaced with 60+ complex expressions |
+| 🔍 **Anti‑Debugging** | `sys.gettrace()` checks injected into bootstrap |
+| 🌍 **Full Unicode Support** | 129‑character alphabet (Latin + Cyrillic + Ukrainian: `ґєіїҐЄІЇ`) |
+| 🛡️ **No Temp Files** | All decryption happens in memory via `BytesIO` and `memoryview` |
+| ⚡ **Self‑Decrypting** | Packed script decrypts itself at runtime — zero external dependencies |
 
 ## 🔒 Protection Layers
 
 ### Complete Pipeline
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. XOR Encryption                                               │
-│    • 16‑bit random key (token_bytes)                            │
-│    • Rolling feedback: f = (f ^ encrypted_byte) & 0xFF          │
-│    • Each byte depends on previous state                        │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 2. GZIP Compression                                             │
-│    • Maximum compression level 9                                │
-│    • Adds GZIP header/metadata entropy                          │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 3. Pickle Serialization                                         │
-│    • Serializes code objects to byte stream                     │
-│    • Preserves Python object structure                          │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 4. LZMA Compression                                             │
-│    • Custom 16 MB dictionary (dict_size = 16_777_216)           │
-│    • Filter chain: lc=4, lp=0, pb=2                             │
-│    • Raw format (FORMAT_RAW) — no container headers             │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 5. ZLIB Compression                                             │
-│    • Level 9 compression                                        │
-│    • wbits=-15 (raw deflate, no zlib header)                    │
-│    • Further reduces size and scrambles patterns                │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 6. Base85 Encoding                                              │
-│    • Encodes binary to ASCII‑safe representation                │
-│    • Higher density than Base64                                 │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 7. UUEncoding (codecs)                                          │
-│    • Additional encoding layer via codecs.encode(..., 'uu')     │
-│    • Legacy format adds another obfuscation barrier             │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 8. Marshal Serialization                                        │
-│    • Converts Python bytecode to marshal format                 │
-│    • marshal.dumps() creates platform‑independent bytecode      │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 9. Polymorphic Wrapper                                          │
-│    • Randomized variable names (19‑50 chars)                    │
-│    • Injected dead code (NONE/TRUE/ELLIPSIS patterns)           │
-│    • Self‑modifying decryption routines                         │
-│    • Runtime bytecode execution via exec() + compile()          │
-└─────────────────────────────────────────────────────────────────┘
+PHASE 1: XOR ENCRYPTION
+├── 16‑bit random key (token_bytes)
+├── Rolling feedback: f = (f ^ encrypted_byte) & 0xFF
+└── Each byte depends on position, key, and previous state
+
+PHASE 2: GZIP COMPRESSION
+├── Maximum compression level 9
+└── Adds GZIP header/metadata entropy
+
+PHASE 3: PICKLE SERIALIZATION
+├── Serializes code objects to byte stream
+└── Preserves Python object structure
+
+PHASE 4: LZMA COMPRESSION
+├── Custom 16 MB dictionary (dict_size = 16_777_216)
+├── Filter chain: lc=4, lp=0, pb=2
+└── Raw format (FORMAT_RAW) — no container headers
+
+PHASE 5: ZLIB COMPRESSION
+├── Level 9 compression
+├── wbits=-15 (raw deflate, no zlib header)
+└── Further reduces size and scrambles patterns
+
+PHASE 6: BASE85 ENCODING
+├── Encodes binary to ASCII‑safe representation
+└── Higher density than Base64
+
+PHASE 7: UUENCODING (codecs)
+├── Additional encoding layer via codecs.encode(..., 'uu')
+└── Legacy format adds another obfuscation barrier
+
+PHASE 8: MARSHAL SERIALIZATION
+├── Converts Python bytecode to marshal format
+└── marshal.dumps() creates platform‑independent bytecode
+
+PHASE 9: POLYMORPHIC WRAPPER
+├── Randomized variable names (19‑50 chars, 129-char alphabet)
+├── 60+ dead code patterns (NONE/TRUE/ELLIPSIS)
+├── Self‑modifying decryption routines
+└── Runtime bytecode execution via exec() + compile()
 ```
 
-### 🎲 Randomization Sources
+### Randomization Sources
 
 | Component | Pool Size | Examples |
 |-----------|-----------|----------|
@@ -151,10 +133,10 @@ Each layer adds entropy and makes reverse engineering **exponentially more diffi
 | **`True` Patterns** | 20+ | `(1<<0==1)`, `(len([0])==1)`, `(not[]==False)` |
 | **`...` Patterns** | 20+ | `((lambda x:...)(None))`, `(({}or(...)))` |
 | **XOR Key** | 16‑bit | `token_bytes(2)` — 65536 combinations |
-| **Char Shift Key** | 8‑bit × 2 | Bit shift + XOR for string obfuscation |
+| **Char Shift Key** | 8‑bit × 2 | Bit shift (1-6) + XOR (0-255) for string obfuscation |
 | **Rotation Key** | 8‑bit | `randbelow(255)` for byte rotation |
 
-### 📦 Compression Parameters
+### Compression Parameters
 
 | Algorithm | Settings |
 |-----------|----------|
@@ -195,105 +177,31 @@ python3 packed-my_program.py
 
 The packed script executes identically to the original.
 
-## ⚙️ How It Works
+## ⚙️ Deep Technical Analysis
 
 ### Encryption Algorithm (Rolling XOR)
 
-```python
-k0, k1 = random_16bit_key
-f = k0
-
-for i, byte in enumerate(original_bytes):
-    encrypted_byte = byte ^ (((k1 + f) + i) & 0xFF)
-    f = (f ^ encrypted_byte) & 0xFF
-    output[i] = encrypted_byte
-```
-
-**Key properties:**
-- Each encrypted byte depends on **position** (`i`), **key** (`k1`), and **previous state** (`f`)
-- Changing one byte affects **all subsequent bytes**
-- Makes known‑plaintext attacks extremely difficult
+The XOR cipher uses a 16‑bit key with a rolling feedback mechanism. The first key byte initializes the feedback state. Each original byte is XORed with a derived value that depends on the second key byte, the current feedback state, and the position index. After encrypting each byte, the feedback state is updated by XORing with the ciphertext byte — creating a chain where every output byte depends on all previous bytes.
 
 ### String Obfuscation
 
-Strings are obfuscated using **bit‑shift + XOR**:
-
-```python
-shift = random(1-6)
-xor_key = random(0-255)
-
-for char in string:
-    obfuscated = chr((ord(char) << shift) ^ xor_key)
-```
-
-Or via **dynamic chr() generation**:
-
-```python
-# Generates: f'%s'*len % (chr(72),chr(101),chr(108),chr(108),chr(111))
-"f'{{chr(37)}}{{chr(115)}}'*5%(chr(72),chr(101),chr(108),chr(108),chr(111))"
-```
+Strings are obfuscated using bit‑shift + XOR. Each character is shifted left by a random amount (1-6 bits) and XORed with a random 8‑bit key. Alternatively, strings can be generated dynamically at runtime using `chr()` calls with randomized bases (binary, octal, decimal, hexadecimal) for each character code.
 
 ### Marshal Bytecode Conversion
 
-The original Python code is:
-1. Compiled to bytecode via `compile(source, '<...>', 'exec')`
-2. Serialized via `marshal.dumps(code_object)`
-3. Encrypted and embedded in the wrapper
-
-At runtime:
-1. Wrapper decrypts the marshal data
-2. `marshal.loads()` reconstructs the code object
-3. `exec()` executes the bytecode
+The original Python code is compiled to bytecode via `compile(source, '<...>', 'exec')`, serialized via `marshal.dumps()`, encrypted, and embedded in the polymorphic wrapper. At runtime, the wrapper decrypts the marshal data, `marshal.loads()` reconstructs the code object, and `exec()` executes it.
 
 ### Polymorphic Wrapper Structure
 
-```python
-# Layer 0: Type creation with __call__
-type('...', (object,), {
-    '__slots__': (),
-    '__or__': lambda _, __: exec(__, globals()),
-    '__init__': lambda _, __: ...
-})()
-
-# Layer 1: ZLIB decompression
-zlib.decompress(packed_1, wbits=-15)
-
-# Layer 2: LZMA decompression
-lzma.decompress(packed_2, format=FORMAT_RAW, filters=LZMA_FILTER)
-
-# Layer 3: GZIP decompression
-gzip.decompress(encrypted_code)
-
-# Layer 4: XOR decryption (in-memory)
-for i, n in enumerate(data):
-    x = n ^ (((k1 + f) + i) & 0xFF)
-    f = (f ^ x) & 0xFF
-```
+The wrapper creates a custom type via `type()` with operator overloading (`__or__`, `__add__`, `__lshift__`, etc.) to chain the decryption layers. Each layer is decompressed in reverse order: type creation → ZLIB decompress → LZMA decompress → GZIP decompress → XOR decrypt → exec().
 
 ### Anti‑Debugging
 
-```python
-from sys import gettrace
-
-if gettrace() is not None:
-    # Debugger detected — exit or behave differently
-    exit(0)
-```
+A `sys.gettrace()` check is injected into the bootstrap code. If a debugger is attached, the script can exit or behave differently.
 
 ### Dead Code Injection
 
-Random expressions that **never execute** but appear in source:
-
-```python
-((None)and((lambda:None)())and(([]or(None))))
-(((0)if(False)else(None))and((lambda x=None:x)()))
-((not(not(False)))or(None)and(1>2))
-```
-
-These:
-- Increase code size
-- Confuse static analyzers
-- Add no runtime overhead (optimized away)
+Random boolean expressions that always evaluate to a constant are peppered throughout the generated code. They increase code size, confuse static analyzers, but add zero runtime overhead as Python's optimizer eliminates them.
 
 ## 📁 Output
 
@@ -303,11 +211,7 @@ Packer creates a file with `packed-` prefix:
 original_script.py  →  packed-original_script.py
 ```
 
-The output is a **valid Python script** containing:
-- Polymorphic bootstrap code
-- Encrypted payload layers
-- Self‑decryption logic
-- Original bytecode (marshaled)
+The output is a valid Python script containing the polymorphic bootstrap code, all encrypted payload layers, self‑decryption logic, and the original bytecode in marshaled form.
 
 ## ⚠️ Important Notes
 
@@ -329,30 +233,11 @@ The output is a **valid Python script** containing:
 
 ### 🔐 Security Considerations
 
-PyPacker implements **defense in depth**:
+PyPacker implements defense in depth across 9 layers. Each layer adds entropy and makes reverse engineering exponentially more difficult. The combination of encryption (XOR), triple compression (GZIP+LZMA+ZLIB), dual encoding (Base85+UU), and marshal bytecode conversion means an attacker must peel through all 9 layers to recover the original source.
 
-| Layer | Purpose |
-|-------|---------|
-| XOR | First encryption barrier |
-| GZIP | Compression + entropy |
-| Pickle | Object serialization |
-| LZMA | High‑ratio compression |
-| ZLIB | Additional scrambling |
-| Base85 | ASCII encoding |
-| UU | Legacy format obfuscation |
-| Marshal | Bytecode conversion |
-| Polymorphic | Runtime self‑protection |
+**What it protects against:** casual code inspection, automated deobfuscators, simple `strings` extraction, basic static analysis.
 
-**What it protects against:**
-- Casual code inspection
-- Automated deobfuscators
-- Simple `strings` extraction
-- Basic static analysis
-
-**What it does NOT protect against:**
-- Determined reverse engineer with debugger
-- Memory dumping at runtime
-- Python bytecode disassemblers
+**What it does NOT protect against:** determined reverse engineer with debugger, memory dumping at runtime, Python bytecode disassemblers.
 
 > ⚠️ For mission‑critical IP, combine with server‑side validation, license checks, and legal protections.
 
@@ -374,21 +259,21 @@ PyPacker implements **defense in depth**:
 
 ## 📋 Обзор
 
-**PyPacker** — это продвинутый инструмент защиты Python‑кода, который превращает обычные скрипты в **сильно обфусцированные, многослойно зашифрованные, саморасшифровывающиеся исполняемые файлы**.
+**PyPacker** — продвинутый инструмент защиты Python‑кода, который превращает обычные скрипты в сильно обфусцированные, многослойно зашифрованные, саморасшифровывающиеся исполняемые файлы.
 
-В отличие от простых обфускаторов, PyPacker реализует **9‑уровневый конвейер защиты**:
+### Что делает его уникальным?
 
-1. **XOR‑шифрование** (16‑битный скользящий ключ)
-2. **GZIP‑сжатие** (уровень 9)
-3. **Pickle‑сериализация** (маршалинг кодовых объектов)
-4. **LZMA‑сжатие** (кастомный словарь 16 МБ)
-5. **ZLIB‑сжатие** (raw deflate, уровень 9)
-6. **Base85‑кодирование** (кодирование полезной нагрузки)
-7. **UU‑кодирование** (слой codecs)
-8. **Marshal‑сериализация** (преобразование в байт‑код)
-9. **Полиморфная обёртка** (саморасшифровка во время выполнения)
-
-Каждый слой добавляет энтропию и делает обратную разработку **экспоненциально сложнее**.
+| Компонент | Реализация |
+|-----------|------------|
+| **9‑уровневый конвейер** | XOR → GZIP → Pickle → LZMA → ZLIB → Base85 → UU → Marshal → Полиморф |
+| **Скользящий XOR‑шифр** | 16‑битный ключ с обратной связью — каждый байт зависит от предыдущих |
+| **Тройное сжатие** | GZIP + LZMA (словарь 16 МБ) + ZLIB (raw deflate) для максимальной энтропии |
+| **Полиморфная обёртка** | 100% уникальна для каждой сборки — имена из 129-символьного алфавита |
+| **Обфускация констант** | `True`/`False`/`None`/`...` заменены 60+ сложными выражениями |
+| **Marshal байт‑код** | Преобразование исходников в маршалированные кодовые объекты |
+| **Впрыск мёртвого кода** | Случайные выражения, которые никогда не выполняются |
+| **Анти‑отладка** | Внедрены проверки `sys.gettrace()` |
+| **Без временных файлов** | Вся расшифровка происходит в памяти |
 
 ## ✨ Возможности
 
@@ -396,246 +281,59 @@ PyPacker implements **defense in depth**:
 |-------------|----------|
 | 🔐 **9‑уровневое шифрование** | XOR → GZIP → Pickle → LZMA → ZLIB → Base85 → UU → Marshal → Полиморф |
 | 🎲 **Полиморфный код** | Разные паттерны обфускации при каждой сборке |
-| 🔄 **Скользящий XOR‑ключ** | 16‑битный ключ с механизмом обратной связи |
+| 🔄 **Скользящий XOR‑ключ** | 16‑битный ключ с обратной связью — каждый байт зависит от предыдущего состояния |
 | 📦 **Тройное сжатие** | GZIP + LZMA + ZLIB для максимальной энтропии |
-| 🧠 **Marshal байт‑код** | Преобразование исходников в маршалированные кодовые объекты |
-| 🎭 **Обфускация констант** | `True`/`False`/`None`/`...` заменены сложными выражениями |
-| 🔍 **Анти‑отладка** | Внедрены проверки `sys.gettrace()` |
-| 🌍 **Полная Unicode‑поддержка** | Алфавит из 129 символов (латиница + кириллица + украинские) |
-| 🛡️ **Без временных файлов** | Вся расшифровка происходит в памяти |
+| 🧠 **Marshal байт‑код** | Преобразование в маршалированные кодовые объекты через `marshal.dumps()` |
+| 🎭 **Обфускация констант** | `True`/`False`/`None`/`...` заменены 60+ сложными выражениями |
+| 🔍 **Анти‑отладка** | Проверки `sys.gettrace()` в коде начальной загрузки |
+| 🌍 **Полная Unicode‑поддержка** | Алфавит из 129 символов (латиница + кириллица + украинские: `ґєіїҐЄІЇ`) |
+| 🛡️ **Без временных файлов** | Расшифровка через `BytesIO` и `memoryview` |
 | ⚡ **Саморасшифровка** | Упакованный скрипт расшифровывает себя при запуске |
 
 ## 🔒 Уровни защиты
 
-### Полный конвейер
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. XOR‑шифрование                                               │
-│    • 16‑битный случайный ключ (token_bytes)                     │
-│    • Скользящая обратная связь: f = (f ^ зашифрованный_байт)    │
-│    • Каждый байт зависит от предыдущего состояния               │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 2. GZIP‑сжатие                                                  │
-│    • Максимальный уровень сжатия 9                              │
-│    • Добавляет энтропию заголовков GZIP                         │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 3. Pickle‑сериализация                                          │
-│    • Сериализует кодовые объекты в байтовый поток               │
-│    • Сохраняет структуру объектов Python                        │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 4. LZMA‑сжатие                                                  │
-│    • Кастомный словарь 16 МБ (dict_size = 16_777_216)           │
-│    • Цепочка фильтров: lc=4, lp=0, pb=2                         │
-│    • Сырой формат (FORMAT_RAW) — без заголовков контейнера      │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 5. ZLIB‑сжатие                                                  │
-│    • Уровень сжатия 9                                            │
-│    • wbits=-15 (raw deflate, без заголовка zlib)                │
-│    • Дополнительно уменьшает размер и перемешивает паттерны     │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 6. Base85‑кодирование                                           │
-│    • Кодирует бинарные данные в ASCII‑безопасное представление  │
-│    • Более высокая плотность, чем Base64                        │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 7. UU‑кодирование (codecs)                                      │
-│    • Дополнительный слой через codecs.encode(..., 'uu')         │
-│    • Устаревший формат добавляет ещё один барьер                │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 8. Marshal‑сериализация                                         │
-│    • Преобразует байт‑код Python в формат marshal               │
-│    • marshal.dumps() создаёт платформонезависимый байт‑код      │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 9. Полиморфная обёртка                                          │
-│    • Рандомизированные имена переменных (19‑50 символов)        │
-│    • Впрыск мёртвого кода (паттерны NONE/TRUE/ELLIPSIS)         │
-│    • Самомодифицирующиеся рутины расшифровки                    │
-│    • Выполнение байт‑кода через exec() + compile()              │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 🎲 Источники рандомизации
-
-| Компонент | Размер пула | Примеры |
-|-----------|-------------|---------|
-| **Имена переменных** | 129 символов | Латиница + Кириллица + Украинские (`ґєіїҐЄІЇ`) |
-| **Паттерны `None`** | 20+ | `([].append(0)or(None))`, `((0)if(False)else(None))` |
-| **Паттерны `True`** | 20+ | `(1<<0==1)`, `(len([0])==1)`, `(not[]==False)` |
-| **Паттерны `...`** | 20+ | `((lambda x:...)(None))`, `(({}or(...)))` |
-| **XOR‑ключ** | 16 бит | `token_bytes(2)` — 65536 комбинаций |
-| **Ключ сдвига символов** | 8 бит × 2 | Битовый сдвиг + XOR для обфускации строк |
-| **Ключ поворота** | 8 бит | `randbelow(255)` для поворота байтов |
-
-### 📦 Параметры сжатия
-
-| Алгоритм | Настройки |
-|----------|-----------|
-| **GZIP** | `compresslevel=9` |
-| **LZMA** | `dict_size=16MB`, `lc=4`, `lp=0`, `pb=2`, `FORMAT_RAW` |
-| **ZLIB** | `level=9`, `wbits=-15` |
+*(См. английскую версию для подробной диаграммы)*
 
 ## 🚀 Быстрый старт
-
-### 📥 Скачивание
 
 ```bash
 git clone https://github.com/vk-candpython/pypacker.git
 cd pypacker
-```
-
-### 🏃 Использование
-
-```bash
-python3 pypacker.py <твой_скрипт.py>
-```
-
-**Пример:**
-```bash
 python3 pypacker.py моя_программа.py
-```
-
-**Вывод:**
-```
-packed (моя_программа.py) created (packed-моя_программа.py) [+]
-```
-
-### 📦 Запуск упакованного скрипта
-
-```bash
 python3 packed-моя_программа.py
 ```
 
-Упакованный скрипт выполняется идентично оригиналу.
-
-## ⚙️ Как это работает
+## ⚙️ Глубокий технический анализ
 
 ### Алгоритм шифрования (Скользящий XOR)
 
-```python
-k0, k1 = случайный_16битный_ключ
-f = k0
-
-for i, byte in enumerate(исходные_байты):
-    зашифрованный_байт = byte ^ (((k1 + f) + i) & 0xFF)
-    f = (f ^ зашифрованный_байт) & 0xFF
-    вывод[i] = зашифрованный_байт
-```
-
-**Ключевые свойства:**
-- Каждый зашифрованный байт зависит от **позиции** (`i`), **ключа** (`k1`) и **предыдущего состояния** (`f`)
-- Изменение одного байта влияет на **все последующие байты**
-- Делает атаки с известным открытым текстом крайне сложными
+XOR‑шифр использует 16‑битный ключ с механизмом скользящей обратной связи. Первый байт ключа инициализирует состояние обратной связи. Каждый исходный байт XOR'ится с производным значением, зависящим от второго байта ключа, текущего состояния и позиции. После шифрования каждого байта состояние обновляется XOR'ом с шифротекстом — создаётся цепочка, где каждый выходной байт зависит от всех предыдущих.
 
 ### Обфускация строк
 
-Строки обфусцируются с помощью **битового сдвига + XOR**:
-
-```python
-shift = случайный(1-6)
-xor_key = случайный(0-255)
-
-for char in string:
-    obfuscated = chr((ord(char) << shift) ^ xor_key)
-```
-
-Или через **динамическую генерацию chr()**:
-
-```python
-# Генерирует: f'%s'*len % (chr(72),chr(101),chr(108),chr(108),chr(111))
-"f'{{chr(37)}}{{chr(115)}}'*5%(chr(72),chr(101),chr(108),chr(108),chr(111))"
-```
+Строки обфусцируются через битовый сдвиг + XOR: каждый символ сдвигается влево на случайную величину (1-6 бит) и XOR'ится со случайным 8‑битным ключом. Альтернативно, строки генерируются динамически через вызовы `chr()` со случайными основаниями систем счисления для каждого кода символа.
 
 ### Marshal‑преобразование байт‑кода
 
-Исходный Python‑код:
-1. Компилируется в байт‑код через `compile(source, '<...>', 'exec')`
-2. Сериализуется через `marshal.dumps(code_object)`
-3. Шифруется и встраивается в обёртку
-
-При запуске:
-1. Обёртка расшифровывает marshal‑данные
-2. `marshal.loads()` восстанавливает кодовый объект
-3. `exec()` выполняет байт‑код
+Исходный код компилируется в байт‑код через `compile()`, сериализуется через `marshal.dumps()`, шифруется и встраивается в полиморфную обёртку. При запуске обёртка расшифровывает marshal‑данные, `marshal.loads()` восстанавливает кодовый объект, и `exec()` выполняет его.
 
 ### Структура полиморфной обёртки
 
-```python
-# Слой 0: Создание типа с __call__
-type('...', (object,), {
-    '__slots__': (),
-    '__or__': lambda _, __: exec(__, globals()),
-    '__init__': lambda _, __: ...
-})()
-
-# Слой 1: ZLIB‑распаковка
-zlib.decompress(packed_1, wbits=-15)
-
-# Слой 2: LZMA‑распаковка
-lzma.decompress(packed_2, format=FORMAT_RAW, filters=LZMA_FILTER)
-
-# Слой 3: GZIP‑распаковка
-gzip.decompress(encrypted_code)
-
-# Слой 4: XOR‑расшифровка (в памяти)
-for i, n in enumerate(data):
-    x = n ^ (((k1 + f) + i) & 0xFF)
-    f = (f ^ x) & 0xFF
-```
+Создаётся кастомный тип через `type()` с перегрузкой операторов для цепочки расшифровки: создание типа → ZLIB → LZMA → GZIP → XOR → exec().
 
 ### Анти‑отладка
 
-```python
-from sys import gettrace
-
-if gettrace() is not None:
-    # Обнаружен отладчик — выход или другое поведение
-    exit(0)
-```
+В код начальной загрузки внедрена проверка `sys.gettrace()`. Если отладчик обнаружен, скрипт может завершиться или изменить поведение.
 
 ### Впрыск мёртвого кода
 
-Случайные выражения, которые **никогда не выполняются**, но присутствуют в исходнике:
-
-```python
-((None)and((lambda:None)())and(([]or(None))))
-(((0)if(False)else(None))and((lambda x=None:x)()))
-((not(not(False)))or(None)and(1>2))
-```
-
-Они:
-- Увеличивают размер кода
-- Запутывают статические анализаторы
-- Не добавляют накладных расходов (оптимизируются)
+Случайные булевы выражения, всегда вычисляющиеся в константу, щедро разбросаны по генерируемому коду. Они увеличивают размер, запутывают анализаторы, но не добавляют накладных расходов — оптимизатор Python их устраняет.
 
 ## 📁 Результат
-
-Упаковщик создаёт файл с префиксом `packed-`:
 
 ```
 оригинальный_скрипт.py  →  packed-оригинальный_скрипт.py
 ```
-
-Выходной файл — **валидный Python‑скрипт**, содержащий:
-- Полиморфный код начальной загрузки
-- Зашифрованные слои полезной нагрузки
-- Логику саморасшифровки
-- Исходный байт‑код (маршалированный)
 
 ## ⚠️ Важные замечания
 
@@ -651,50 +349,21 @@ if gettrace() is not None:
 |-------------|-----------|
 | **Требуется интерпретатор Python** | На выходе `.py` — нужен Python 3.x |
 | **Не нативный исполняемый файл** | Используй PyInstaller для `.exe` |
-| **Накладные расходы для больших скриптов** | Расшифровка добавляет задержку при запуске |
+| **Накладные расходы** | Расшифровка добавляет задержку при запуске |
 | **Нет поддержки C‑расширений** | Только чистый Python |
 | **Ложные срабатывания антивирусов** | Сильно обфусцированный код может вызывать тревоги |
-
-### 🔐 Соображения безопасности
-
-PyPacker реализует **эшелонированную защиту**:
-
-| Слой | Назначение |
-|------|------------|
-| XOR | Первый барьер шифрования |
-| GZIP | Сжатие + энтропия |
-| Pickle | Сериализация объектов |
-| LZMA | Высокоэффективное сжатие |
-| ZLIB | Дополнительное перемешивание |
-| Base85 | ASCII‑кодирование |
-| UU | Обфускация устаревшим форматом |
-| Marshal | Преобразование в байт‑код |
-| Полиморф | Самозащита во время выполнения |
-
-**От чего защищает:**
-- Поверхностный анализ кода
-- Автоматические деобфускаторы
-- Простое извлечение `strings`
-- Базовый статический анализ
-
-**От чего НЕ защищает:**
-- Целеустремлённый реверс‑инженер с отладчиком
-- Дамп памяти во время выполнения
-- Дизассемблеры байт‑кода Python
-
-> ⚠️ Для критически важной интеллектуальной собственности комбинируй с серверной валидацией, проверками лицензий и юридической защитой.
 
 ## 🔧 Устранение неполадок
 
 | Проблема | Решение |
 |----------|---------|
-| `ModuleNotFoundError` в упакованном скрипте | Сначала установи зависимости на целевой машине |
-| `RecursionError` | Исходный скрипт слишком большой — разбей на модули |
+| `ModuleNotFoundError` | Установи зависимости на целевой машине |
+| `RecursionError` | Разбей скрипт на модули |
 | `MemoryError` | Уменьши размер исходного скрипта |
 | `SyntaxError` в выводе | Проверь синтаксис исходного скрипта |
-| Упакованный скрипт медленнее | Ожидаемо — накладные расходы на многослойную расшифровку |
-| Антивирус помечает скрипт | Добавь исключение или используй PyInstaller для дистрибуции |
-| Ошибка загрузки `marshal` | Несовпадение версий Python — пакуй и запускай на одной версии |
+| Упакованный скрипт медленнее | Ожидаемо — многослойная расшифровка |
+| Антивирус помечает скрипт | Добавь исключение или используй PyInstaller |
+| Ошибка загрузки `marshal` | Пакуй и запускай на одной версии Python |
 
 ---
 
