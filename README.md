@@ -54,8 +54,8 @@
 |-----------|----------------|
 | **9‑Layer Encryption Pipeline** | XOR → GZIP → Pickle → LZMA → ZLIB → Base85 → UU → Marshal → Polymorphic |
 | **Rolling XOR Cipher** | 16‑bit key with feedback — each encrypted byte depends on all previous |
-| **Triple Compression** | GZIP + LZMA (16MB dictionary) + ZLIB (raw deflate) for maximum entropy |
-| **Polymorphic Wrapper** | 100% unique per build — random identifiers from 129-char alphabet |
+| **Triple Compression** | GZIP + LZMA (4MB dictionary) + ZLIB (raw deflate) for maximum entropy |
+| **Polymorphic Wrapper** | 100% unique per build — random identifiers from 650+ char alphabet |
 | **Constant Obfuscation** | `True`/`False`/`None`/`...` replaced with 60+ complex expressions |
 | **Marshal Bytecode** | Converts Python source to marshaled code objects |
 | **Dead Code Injection** | Random expressions that never execute but confuse static analyzers |
@@ -73,7 +73,7 @@
 | 🧠 **Marshal Bytecode** | Converts Python source to marshaled code objects via `marshal.dumps()` |
 | 🎭 **Constant Obfuscation** | `True`/`False`/`None`/`...` replaced with 60+ complex expressions |
 | 🔍 **Anti‑Debugging** | `sys.gettrace()` checks injected into bootstrap |
-| 🌍 **Full Unicode Support** | 129‑character alphabet (Latin + Cyrillic + Ukrainian: `ґєіїҐЄІЇ`) |
+| 🌍 **Massive Unicode Alphabet** | 650+ characters across 12 scripts (Latin, Cyrillic, Ukrainian, Greek, Georgian, Armenian, Arabic, Devanagari, Tibetan, Thai, Runic, Canadian Syllabics, CJK, Kana) |
 | 🛡️ **No Temp Files** | All decryption happens in memory via `BytesIO` and `memoryview` |
 | ⚡ **Self‑Decrypting** | Packed script decrypts itself at runtime — zero external dependencies |
 
@@ -96,7 +96,7 @@ PHASE 3: PICKLE SERIALIZATION
 └── Preserves Python object structure
 
 PHASE 4: LZMA COMPRESSION
-├── Custom 16 MB dictionary (dict_size = 16_777_216)
+├── 4 MB dictionary (dict_size = 4 << 20)
 ├── Filter chain: lc=4, lp=0, pb=2
 └── Raw format (FORMAT_RAW) — no container headers
 
@@ -118,7 +118,7 @@ PHASE 8: MARSHAL SERIALIZATION
 └── marshal.dumps() creates platform‑independent bytecode
 
 PHASE 9: POLYMORPHIC WRAPPER
-├── Randomized variable names (19‑50 chars, 129-char alphabet)
+├── Randomized variable names (5‑255 chars, 650+ char alphabet)
 ├── 60+ dead code patterns (NONE/TRUE/ELLIPSIS)
 ├── Self‑modifying decryption routines
 └── Runtime bytecode execution via exec() + compile()
@@ -128,21 +128,34 @@ PHASE 9: POLYMORPHIC WRAPPER
 
 | Component | Pool Size | Examples |
 |-----------|-----------|----------|
-| **Variable Names** | 129 chars | Latin + Cyrillic + Ukrainian (`ґєіїҐЄІЇ`) |
+| **Variable Names** | 650+ chars | 12 Unicode scripts |
 | **`None` Patterns** | 20+ | `([].append(0)or(None))`, `((0)if(False)else(None))` |
 | **`True` Patterns** | 20+ | `(1<<0==1)`, `(len([0])==1)`, `(not[]==False)` |
 | **`...` Patterns** | 20+ | `((lambda x:...)(None))`, `(({}or(...)))` |
 | **XOR Key** | 16‑bit | `token_bytes(2)` — 65536 combinations |
 | **Char Shift Key** | 8‑bit × 2 | Bit shift (1-6) + XOR (0-255) for string obfuscation |
 | **Rotation Key** | 8‑bit | `randbelow(255)` for byte rotation |
+| **Basis Selector** | 4 | `bin`, `oct`, `int`, `hex` for integer representation |
 
-### Compression Parameters
+### Alphabet Composition
 
-| Algorithm | Settings |
-|-----------|----------|
-| **GZIP** | `compresslevel=9` |
-| **LZMA** | `dict_size=16MB`, `lc=4`, `lp=0`, `pb=2`, `FORMAT_RAW` |
-| **ZLIB** | `level=9`, `wbits=-15` |
+| Script | Examples |
+|--------|----------|
+| Greek | αβγδεζηθικλμνξπρστυφχψω ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΠΡΣΤΥΦΧΨΩ |
+| Latin | abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ |
+| Cyrillic + Ukrainian | абвг...ґєії АБВГ...ҐЄІЇ |
+| Hiragana | あいうえおかきくけこ |
+| Tibetan | ཀཁགངཅཆཇཉཏཐདནཔཕབམ |
+| Arabic | جهدخذارزسشصضطظعغفقكلمنهوي |
+| Katakana | アイウエオカキクケコサシスセソ |
+| Georgian | აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ |
+| Thai | กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮ |
+| Devanagari | अआइईउऊऋऌएऐओऔकखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह |
+| Runic | ᚠᚢthᚨᚱᚲᚷᚹᚺᚻᚼᚽᚾᚿᛁᛂᛃᛄᛅᛆᛇᛈᛉᛊᛋᛌᛍᛎᛏᛐᛑᛒᛓᛔᛕᛖᛗᛘᛙᛚᛛᛜᛝᛞᛟᛠᛡᛢᛣᛤᛥᛦᛧᛨᛩᛪ |
+| CJK | 维度空間術式隠密虚空混沌断絶境界零極幻影幽冥封印禁忌呪縛乖離鍵扉深淵監視 |
+| Ethiopic | ሀሁሂሃሄህሆሇለሉሊ... |
+| Armenian | ԱԲԳԴԵԶԷԸԹԺԻԼԽԾԿՀՁ... աբգդեզէըթժիլխծկհձղճմյնշոչպջռսվտրցւփքօֆ |
+| Canadian Syllabics | ᐁᐂᐃᐄᐅᐆᐇᐈᐉᐊᐋ... |
 
 ## 🚀 Quick Start
 
@@ -185,7 +198,7 @@ The XOR cipher uses a 16‑bit key with a rolling feedback mechanism. The first 
 
 ### String Obfuscation
 
-Strings are obfuscated using bit‑shift + XOR. Each character is shifted left by a random amount (1-6 bits) and XORed with a random 8‑bit key. Alternatively, strings can be generated dynamically at runtime using `chr()` calls with randomized bases (binary, octal, decimal, hexadecimal) for each character code.
+Strings are obfuscated using bit‑shift + XOR. Each character is shifted left by a random amount (1-6 bits) and XORed with a random 8‑bit key. Alternatively, strings can be generated dynamically at runtime using `chr()` calls with randomized bases (`bin`, `oct`, `int`, `hex`) for each character code.
 
 ### Marshal Bytecode Conversion
 
@@ -230,6 +243,7 @@ The output is a valid Python script containing the polymorphic bootstrap code, a
 | **Large Script Overhead** | Decryption adds startup latency |
 | **No C Extension Support** | Pure Python only |
 | **AV False Positives** | Heavily obfuscated code may trigger alerts |
+| **Python Version Sensitive** | `marshal` format can change between major versions |
 
 ### 🔐 Security Considerations
 
@@ -267,8 +281,8 @@ PyPacker implements defense in depth across 9 layers. Each layer adds entropy an
 |-----------|------------|
 | **9‑уровневый конвейер** | XOR → GZIP → Pickle → LZMA → ZLIB → Base85 → UU → Marshal → Полиморф |
 | **Скользящий XOR‑шифр** | 16‑битный ключ с обратной связью — каждый байт зависит от предыдущих |
-| **Тройное сжатие** | GZIP + LZMA (словарь 16 МБ) + ZLIB (raw deflate) для максимальной энтропии |
-| **Полиморфная обёртка** | 100% уникальна для каждой сборки — имена из 129-символьного алфавита |
+| **Тройное сжатие** | GZIP + LZMA (словарь 4 МБ) + ZLIB (raw deflate) для максимальной энтропии |
+| **Полиморфная обёртка** | 100% уникальна для каждой сборки — имена из 650+ символов |
 | **Обфускация констант** | `True`/`False`/`None`/`...` заменены 60+ сложными выражениями |
 | **Marshal байт‑код** | Преобразование исходников в маршалированные кодовые объекты |
 | **Впрыск мёртвого кода** | Случайные выражения, которые никогда не выполняются |
@@ -286,13 +300,9 @@ PyPacker implements defense in depth across 9 layers. Each layer adds entropy an
 | 🧠 **Marshal байт‑код** | Преобразование в маршалированные кодовые объекты через `marshal.dumps()` |
 | 🎭 **Обфускация констант** | `True`/`False`/`None`/`...` заменены 60+ сложными выражениями |
 | 🔍 **Анти‑отладка** | Проверки `sys.gettrace()` в коде начальной загрузки |
-| 🌍 **Полная Unicode‑поддержка** | Алфавит из 129 символов (латиница + кириллица + украинские: `ґєіїҐЄІЇ`) |
+| 🌍 **Массивный Unicode‑алфавит** | 650+ символов из 12 письменностей |
 | 🛡️ **Без временных файлов** | Расшифровка через `BytesIO` и `memoryview` |
 | ⚡ **Саморасшифровка** | Упакованный скрипт расшифровывает себя при запуске |
-
-## 🔒 Уровни защиты
-
-*(См. английскую версию для подробной диаграммы)*
 
 ## 🚀 Быстрый старт
 
@@ -302,32 +312,6 @@ cd pypacker
 python3 pypacker.py моя_программа.py
 python3 packed-моя_программа.py
 ```
-
-## ⚙️ Глубокий технический анализ
-
-### Алгоритм шифрования (Скользящий XOR)
-
-XOR‑шифр использует 16‑битный ключ с механизмом скользящей обратной связи. Первый байт ключа инициализирует состояние обратной связи. Каждый исходный байт XOR'ится с производным значением, зависящим от второго байта ключа, текущего состояния и позиции. После шифрования каждого байта состояние обновляется XOR'ом с шифротекстом — создаётся цепочка, где каждый выходной байт зависит от всех предыдущих.
-
-### Обфускация строк
-
-Строки обфусцируются через битовый сдвиг + XOR: каждый символ сдвигается влево на случайную величину (1-6 бит) и XOR'ится со случайным 8‑битным ключом. Альтернативно, строки генерируются динамически через вызовы `chr()` со случайными основаниями систем счисления для каждого кода символа.
-
-### Marshal‑преобразование байт‑кода
-
-Исходный код компилируется в байт‑код через `compile()`, сериализуется через `marshal.dumps()`, шифруется и встраивается в полиморфную обёртку. При запуске обёртка расшифровывает marshal‑данные, `marshal.loads()` восстанавливает кодовый объект, и `exec()` выполняет его.
-
-### Структура полиморфной обёртки
-
-Создаётся кастомный тип через `type()` с перегрузкой операторов для цепочки расшифровки: создание типа → ZLIB → LZMA → GZIP → XOR → exec().
-
-### Анти‑отладка
-
-В код начальной загрузки внедрена проверка `sys.gettrace()`. Если отладчик обнаружен, скрипт может завершиться или изменить поведение.
-
-### Впрыск мёртвого кода
-
-Случайные булевы выражения, всегда вычисляющиеся в константу, щедро разбросаны по генерируемому коду. Они увеличивают размер, запутывают анализаторы, но не добавляют накладных расходов — оптимизатор Python их устраняет.
 
 ## 📁 Результат
 
@@ -352,6 +336,7 @@ XOR‑шифр использует 16‑битный ключ с механиз
 | **Накладные расходы** | Расшифровка добавляет задержку при запуске |
 | **Нет поддержки C‑расширений** | Только чистый Python |
 | **Ложные срабатывания антивирусов** | Сильно обфусцированный код может вызывать тревоги |
+| **Чувствительность к версии Python** | Формат `marshal` может меняться между версиями |
 
 ## 🔧 Устранение неполадок
 
